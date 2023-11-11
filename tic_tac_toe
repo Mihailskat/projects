@@ -1,0 +1,132 @@
+import random # импортируем модуль random
+
+def rules(): # создаём функцию которая пишет правила
+    print('Приветствую тебя в игре "Крестики-нолики!"')
+    print('Првила игры: ')
+    print('1. Для начала компьютер рандомно определит чем ты будешь играть. ')
+    print('2. Начинает тот, кто ходит 0')
+    print('3. Ваша задача первым заполнить своими фишками 3 клетки игрового поля (по горизонтали, по вертикали или наискосок)')
+    print('4. Для того чтобы сделать ход введите координату клетки игрового поля. ')
+    print('Кто первым это сделает тот и победил!')
+    print('Удачи!!! ')
+
+def draw_board(field): # создаём функцию для рисования игрового поля
+    print('3  ' + field[0] + ' | ' + field[1] + ' | ' + field[2])
+    print('2  ' + field[3] + ' | ' + field[4] + ' | ' + field[5])
+    print('1  ' + field[6] + ' | ' + field[7] + ' | ' + field[8])
+    print("   1   2   3 ")
+    print("---------------\n")
+
+def get_player_move(player_symbols, field): # создаём функцию для считывания хода игрока 
+    x = int(input('Введите x координату: ')) 
+    y = int(input('Введите y координату: '))
+
+    while True: # запускаем цикл для проверки хода на корректность 
+        if (x not in [1, 2, 3]) or (y not in [1, 2, 3]): # провреям есть ли такая клетка
+            print('Введено некорректное значение, попробуйте ещё раз! ')
+            x = int(input('Введите x координату: '))
+            y = int(input('Введите y координату: '))
+        elif field[(3 - y) * 3 + x - 1] != '-': # проверяем свободна ли эта клетка
+            print('Сюда уже походили, попробуйте ещё раз! ')
+            x = int(input('Введите x координату: '))
+            y = int(input('Введите y координату: '))
+        else: # если всё верно выходим из цикла 
+            break
+    
+    field[(3 - y) * 3 + x - 1] = player_symbols # заполняем нашу клетку символом игрока 
+    return field
+
+def get_computer_move(computer_symbols, field): # создаём функцию для считывания хода компьютера
+    x = random.randint(1, 3)
+    y = random.randint(1, 3)
+
+    while True: # запускаем цикл для проверки хода на корректность 
+        if field[((3 - y) * 3 + x - 1)] != '-': # проверяем свободна ли эта клетка
+            x = random.randint(1, 3)
+            y = random.randint(1, 3)
+        else: # если всё верно выходим из цикла 
+            break
+    
+    field[(3 - y) * 3 + x - 1] = computer_symbols # заполняем нашу клетку символом компьютера 
+    return field
+
+def check_win(field): # создаём функцию для прверки на победу
+    # перебираем все победные случаи
+    if field[0] == field[1] == field[2] and field[0] != '-':
+        return field[0]
+    if field[3] == field[4] == field[5] and field[3] != '-':
+        return field[3]
+    if field[6] == field[7] == field[8] and field[6] != '-':
+        return field[6]
+
+    if field[0] == field[3] == field[6] and field[0] != '-':
+        return field[0]
+    if field[1] == field[4] == field[7] and field[1] != '-':
+        return field[1]
+    if field[2] == field[5] == field[8] and field[2] != '-':
+        return field[2]
+
+    if field[0] == field[4] == field[8] and field[0] != '-':
+        return field[0]
+    if field[2] == field[4] == field[6] and field[2] != '-':
+        return field[2]
+    
+    # рассматриваем случай ничьи
+    if '-' not in field: 
+        return '='
+    else:
+        return '-'
+    
+def replay_game(): # создаём функцию для повтора игры 
+    print('Желаете сыграть ещё? (да/нет) ')
+    answer = input().lower() # считываем ответ пользователя
+    if answer == 'да': # рассматриваем положительный ответ 
+        main()
+    elif answer == 'нет': # рассматриваем отрицательный ответ
+        print('Возращайтесь ещё :)')
+    else: # случай некорректного ответа
+        print('Ответ не распознан!  ')
+        replay_game()
+
+def main(): # создаём функцию для запука программы
+    rules() # вызываем функцию для написания правил  
+    symbols = ['X', '0'] # создаём список из наших игровых фишек
+    player_idx = random.randint(0, 1) 
+    player_symbol = symbols[player_idx] # рандомно выбираем фишку игрока 
+    computer_symbol = symbols[1 - player_idx] # оставшуюся отдаём компьютеру
+    print('Вы будете ходить '+ player_symbol)
+
+    field = ['-'] * 9 # создаём пустое поле
+    if player_symbol == '0': # если игроку выпало 0  отдаём первый ход компьютеру
+        get_computer_move(computer_symbol, field)
+    draw_board(field) # рисуем поле 
+
+    while True: # запускаем цикл для проверки кто победил 
+        get_player_move(player_symbol, field) # даём ход игроку 
+        check_win_respons = check_win(field) # результат проверки на победителя 
+        if check_win_respons == player_symbol: # случай если победил игрок 
+            print('Вы победили!!! ')
+            break
+        elif check_win_respons == computer_symbol: # случай если победил компьютер 
+            print('Победил компьютер! ')
+            break
+        elif check_win_respons == '=': # случай если ничья
+            print('Ничья! ')
+            break
+        
+        get_computer_move(computer_symbol, field) # даём ход компьютеру 
+        draw_board(field) # рисуем поле 
+        check_win_respons = check_win(field) # результат проверки на победителя 
+        if check_win_respons == player_symbol: # случай если победил игрок 
+            print('Вы победили!!! ')
+            break
+        elif check_win_respons == computer_symbol: # случай если победил компьютер 
+            print('Победил компьютер! ')
+            break
+        elif check_win_respons == '=': # случай если ничья
+            print('Ничья! ')
+            break
+    
+    replay_game() # вызываем функцию для повтора игры
+
+main() # запускаем программу  
